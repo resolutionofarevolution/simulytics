@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simulytics Store</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="logo">Simulytics</div>
+        <div class="cart-icon" onclick="toggleCart()">
+            🛒 <span id="cart-count">0</span>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <p class="subtitle">Products</p>
+    <h1>Our Products</h1>
+    <p class="desc">Have a good setup for your minimalist store</p>
+
+    <!-- FILTERS -->
+    <div class="filters">
+        <button onclick="filterProducts(event, 'all')" class="active">All</button>
+        <button onclick="filterProducts(event, 'clothes')">Clothes</button>
+        <button onclick="filterProducts(event, 'accessories')">Accessories</button>
+        <button onclick="filterProducts(event, 'shoes')">Shoes</button>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="products">
+
+        <div class="card clothes">
+            <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab"/>
+            <h3>T-Shirt</h3>
+            <p>Comfort cotton wear</p>
+            <span class="price">₹699</span>
+            <button class="add-btn" onclick="addToCart('T-Shirt',699)">Add to Cart</button>
+        </div>
+
+        <div class="card accessories">
+            <img src="https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04"/>
+            <h3>Keyboard</h3>
+            <p>Mechanical RGB</p>
+            <span class="price">₹2500</span>
+            <button class="add-btn" onclick="addToCart('Keyboard',2500)">Add to Cart</button>
+        </div>
+
+        <div class="card shoes">
+            <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff"/>
+            <h3>Running Shoes</h3>
+            <p>Lightweight sports</p>
+            <span class="price">₹2000</span>
+            <button class="add-btn" onclick="addToCart('Running Shoes',2000)">Add to Cart</button>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- CART DRAWER -->
+<div class="cart-drawer" id="cartDrawer">
+
+    <div class="cart-header">
+        <h3>Your Cart</h3>
+        <span onclick="toggleCart()">✕</span>
+    </div>
+
+    <div class="cart-items" id="cartItems"></div>
+
+    <div class="cart-footer">
+        <p>Total: ₹<span id="cartTotal">0</span></p>
+        <button class="checkout-btn" onclick="checkout()">Checkout</button>
+    </div>
+
+</div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>
