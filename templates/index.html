@@ -5,31 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
 <!-- NAVBAR -->
-<header class="navbar">
-    <div class="nav-container">
-        <div class="logo">Simulytics</div>
+<div class="top-bar">
+    <div class="logo">Simulytics</div>
 
-        <div class="cart-icon" onclick="toggleCart()">
-            🛒
-            <span id="cart-count">0</span>
-        </div>
+    <div class="cart-icon" onclick="toggleCart()">
+        🛒
+        <span id="cart-count">0</span>
     </div>
-</header>
+</div>
 
 <!-- MAIN -->
 <div class="container">
 
-    <div class="header">
-        <h1>Our Products</h1>
-        <p class="desc">Simple. Clean. Functional.</p>
-    </div>
+    <p class="subtitle">Premium Collection</p>
+    <h1>Our Products</h1>
+    <p class="desc">Simple. Clean. Functional.</p>
 
-    <!-- FILTERS -->
+    <!-- FILTER -->
     <div class="filters">
         <button class="active" onclick="filterProducts(event,'all')">All</button>
         <button onclick="filterProducts(event,'clothes')">Clothes</button>
@@ -40,66 +37,73 @@
     <!-- PRODUCTS -->
     <div class="products">
 
+        <!-- CARD 1 -->
         <div class="card clothes">
             <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab">
-            <div class="info">
+
+            <div class="card-content">
                 <h3>T-Shirt</h3>
                 <p>Comfort cotton wear</p>
 
-                <div class="bottom">
+                <div class="card-bottom">
                     <span>₹699</span>
-                    <button onclick="addToCart('T-Shirt',699)">Add</button>
+                    <button class="add-btn" onclick="addToCart('T-Shirt',699)">Add</button>
                 </div>
             </div>
         </div>
 
+        <!-- CARD 2 -->
         <div class="card accessories">
             <img src="https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04">
+
             <div class="card-content">
                 <h3>Keyboard</h3>
                 <p>Mechanical RGB</p>
 
                 <div class="card-bottom">
                     <span>₹2500</span>
-                    <button onclick="addToCart('Keyboard',2500)">Add</button>
+                    <button class="add-btn" onclick="addToCart('Keyboard',2500)">Add</button>
                 </div>
             </div>
         </div>
 
+        <!-- CARD 3 -->
         <div class="card shoes">
             <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff">
+
             <div class="card-content">
                 <h3>Running Shoes</h3>
                 <p>Lightweight sports</p>
 
                 <div class="card-bottom">
                     <span>₹2000</span>
-                    <button onclick="addToCart('Running Shoes',2000)">Add</button>
+                    <button class="add-btn" onclick="addToCart('Running Shoes',2000)">Add</button>
                 </div>
             </div>
         </div>
 
     </div>
+
 </div>
 
 <!-- OVERLAY -->
 <div class="overlay" id="overlay" onclick="toggleCart()"></div>
 
-<!-- CART -->
-<div class="cart" id="cartDrawer">
+<!-- CART DRAWER -->
+<div class="cart-drawer" id="cartDrawer">
     <div class="cart-header">
         <h3>Your Cart</h3>
         <span onclick="toggleCart()">✕</span>
     </div>
 
-    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-items" id="cartItems"></div>
 
     <div class="cart-footer">
         <p>Total: ₹<span id="cartTotal">0</span></p>
-        <button onclick="checkout()">Checkout</button>
+        <button class="checkout-btn" onclick="checkout()">Checkout</button>
     </div>
 </div>
 
-<script src="/static/script.js"></script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
