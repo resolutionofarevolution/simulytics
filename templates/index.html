@@ -2,6 +2,10 @@
 <html>
 <head>
     <title>Simulytics Store</title>
+
+    <!-- IMPORTANT FOR MOBILE -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -16,17 +20,16 @@
         </div>
     </div>
 
-    <!-- HEADER -->
     <p class="subtitle">Products</p>
     <h1>Our Products</h1>
     <p class="desc">Have a good setup for your minimalist store</p>
 
     <!-- FILTERS -->
     <div class="filters">
-        <button onclick="filterProducts(event, 'all')" class="active">All</button>
-        <button onclick="filterProducts(event, 'clothes')">Clothes</button>
-        <button onclick="filterProducts(event, 'accessories')">Accessories</button>
-        <button onclick="filterProducts(event, 'shoes')">Shoes</button>
+        <button onclick="filterProducts(event,'all')" class="active">All</button>
+        <button onclick="filterProducts(event,'clothes')">Clothes</button>
+        <button onclick="filterProducts(event,'accessories')">Accessories</button>
+        <button onclick="filterProducts(event,'shoes')">Shoes</button>
     </div>
 
     <!-- PRODUCTS -->
@@ -60,9 +63,8 @@
 
 </div>
 
-<!-- CART DRAWER -->
+<!-- CART -->
 <div class="cart-drawer" id="cartDrawer">
-
     <div class="cart-header">
         <h3>Your Cart</h3>
         <span onclick="toggleCart()">✕</span>
@@ -74,7 +76,6 @@
         <p>Total: ₹<span id="cartTotal">0</span></p>
         <button class="checkout-btn" onclick="checkout()">Checkout</button>
     </div>
-
 </div>
 
 <script src="/static/script.js"></script>

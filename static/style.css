@@ -1,21 +1,25 @@
 body {
     font-family: 'Segoe UI', sans-serif;
-    background: #f5f7fa;
     margin: 0;
+    background: #f5f7fa;
 }
 
+/* Container */
 .container {
     max-width: 1000px;
     margin: auto;
     padding: 0 15px;
-    text-align: center;
 }
 
-/* Top Bar */
+/* TOP BAR */
 .top-bar {
     display: flex;
     justify-content: space-between;
     padding: 15px 0;
+    position: sticky;
+    top: 0;
+    background: #f5f7fa;
+    z-index: 10;
 }
 
 .logo {
@@ -36,24 +40,32 @@ body {
 
 /* Text */
 .subtitle {
-    margin-top: 20px;
-    color: gray;
+    text-align: center;
     font-size: 12px;
+    color: gray;
+}
+
+h1 {
+    text-align: center;
 }
 
 .desc {
+    text-align: center;
     color: gray;
     font-size: 14px;
 }
 
-/* Filters */
+/* FILTERS (SCROLLABLE MOBILE) */
 .filters {
-    margin: 20px 0;
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px 0;
 }
 
 .filters button {
-    padding: 10px 15px;
-    margin: 5px;
+    flex-shrink: 0;
+    padding: 10px 16px;
     border: none;
     background: #fff;
     border-radius: 20px;
@@ -65,26 +77,20 @@ body {
     color: white;
 }
 
-/* Products */
+/* PRODUCTS GRID */
 .products {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 25px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
 }
 
+/* CARD */
 .card {
-    width: 190px;
-    background: #fff;
-    padding: 15px;
+    background: white;
+    padding: 12px;
     border-radius: 12px;
-    text-align: left;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-    transition: 0.25s;
-}
-
-.card:hover {
-    transform: translateY(-6px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+    transition: 0.2s;
 }
 
 .card img {
@@ -99,27 +105,27 @@ body {
     font-weight: bold;
 }
 
-/* Button */
+/* BUTTON */
 .add-btn {
-    margin-top: 10px;
-    padding: 8px;
+    margin-top: 8px;
+    width: 100%;
+    padding: 10px;
     border: none;
     background: black;
     color: white;
     border-radius: 8px;
-    cursor: pointer;
 }
 
-/* CART DRAWER */
+/* CART */
 .cart-drawer {
     position: fixed;
-    right: -340px;
+    right: -100%;
     top: 0;
     width: 320px;
     height: 100%;
     background: white;
     transition: 0.3s;
-    box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    box-shadow: -5px 0 20px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
 }
@@ -131,78 +137,50 @@ body {
 .cart-header {
     display: flex;
     justify-content: space-between;
-    padding: 18px;
+    padding: 15px;
     border-bottom: 1px solid #eee;
 }
 
 .cart-items {
     flex: 1;
     overflow-y: auto;
-    padding: 15px;
+    padding: 10px;
 }
 
 .cart-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #f2f2f2;
-    padding-bottom: 10px;
-}
-
-.cart-left {
-    display: flex;
-    flex-direction: column;
-}
-
-.item-name {
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.item-price {
-    font-size: 12px;
-    color: gray;
+    margin-bottom: 10px;
 }
 
 .cart-right {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    gap: 5px;
 }
 
 .cart-right button {
-    width: 24px;
-    height: 24px;
-    border: none;
-    background: #f1f1f1;
-    border-radius: 6px;
-    cursor: pointer;
+    width: 25px;
 }
 
-.qty {
-    min-width: 20px;
-    text-align: center;
+/* MOBILE RESPONSIVE (IMPORTANT) */
+@media (max-width: 768px) {
+
+    .products {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cart-drawer {
+        width: 100%; /* full screen cart */
+    }
 }
 
-/* Footer */
-.cart-footer {
-    padding: 15px;
-    border-top: 1px solid #eee;
-}
+@media (max-width: 480px) {
 
-.checkout-btn {
-    width: 100%;
-    padding: 12px;
-    background: black;
-    color: white;
-    border: none;
-    border-radius: 10px;
-}
+    .products {
+        grid-template-columns: 1fr; /* SINGLE COLUMN */
+    }
 
-/* Mobile */
-@media (max-width: 600px) {
-    .card {
-        width: 45%;
+    h1 {
+        font-size: 22px;
     }
 }

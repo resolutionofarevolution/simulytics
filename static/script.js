@@ -1,104 +1,63 @@
-// SESSION
-let session_id = localStorage.getItem("session_id");
-if (!session_id) {
-    session_id = "S_" + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem("session_id", session_id);
-}
+let cart = [];
 
-// UTM
-const urlParams = new URLSearchParams(window.location.search);
-const utm_source = urlParams.get('utm_source') || "direct";
-const utm_campaign = urlParams.get('utm_campaign') || "none";
-
-localStorage.setItem("utm_source", utm_source);
-localStorage.setItem("utm_campaign", utm_campaign);
-
-// TRACK
+// TRACK (keep yours)
 function trackEvent(event_type, product="") {
     fetch('/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            session_id,
-            utm_source,
-            utm_campaign,
-            event_type,
-            product
-        })
+        body: JSON.stringify({ event_type, product })
     });
 }
 
-trackEvent("page_view");
-
-// FILTER
 function filterProducts(e, category) {
-    trackEvent("filter_click", category);
-
     const cards = document.querySelectorAll('.card');
-    const buttons = document.querySelectorAll('.filters button');
-
-    buttons.forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.filters button').forEach(b => b.classList.remove('active'));
     e.target.classList.add('active');
 
     cards.forEach(card => {
-        if (category === 'all' || card.classList.contains(category)) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
-        }
+        card.style.display =
+            category === 'all' || card.classList.contains(category)
+            ? 'block' : 'none';
     });
 }
 
-// CART WITH QUANTITY
-let cart = [];
-
+/* CART */
 function addToCart(name, price) {
-    const existing = cart.find(item => item.name === name);
+    const item = cart.find(i => i.name === name);
+    if (item) item.qty++;
+    else cart.push({ name, price, qty: 1 });
 
-    if (existing) {
-        existing.qty += 1;
-    } else {
-        cart.push({ name, price, qty: 1 });
-    }
-
-    trackEvent("add_to_cart", name);
-    updateCartUI();
+    updateCart();
 }
 
-function updateCartUI() {
-    const cartItems = document.getElementById("cartItems");
-    const cartCount = document.getElementById("cart-count");
-    const cartTotal = document.getElementById("cartTotal");
+function updateCart() {
+    const itemsDiv = document.getElementById("cartItems");
+    const count = document.getElementById("cart-count");
+    const totalDiv = document.getElementById("cartTotal");
 
-    cartItems.innerHTML = "";
+    itemsDiv.innerHTML = "";
 
     let total = 0;
-    let count = 0;
+    let c = 0;
 
     cart.forEach(item => {
         total += item.price * item.qty;
-        count += item.qty;
+        c += item.qty;
 
-        const div = document.createElement("div");
-        div.classList.add("cart-item");
-
-        div.innerHTML = `
-            <div class="cart-left">
-                <span class="item-name">${item.name}</span>
-                <span class="item-price">₹${item.price}</span>
-            </div>
-            <div class="cart-right">
-                <button onclick="changeQty('${item.name}', -1)">−</button>
-                <span class="qty">${item.qty}</span>
-                <button onclick="changeQty('${item.name}', 1)">+</button>
+        itemsDiv.innerHTML += `
+            <div class="cart-item">
+                <div>${item.name} (₹${item.price})</div>
+                <div class="cart-right">
+                    <button onclick="changeQty('${item.name}',-1)">-</button>
+                    <span>${item.qty}</span>
+                    <button onclick="changeQty('${item.name}',1)">+</button>
+                </div>
             </div>
         `;
-
-        cartItems.appendChild(div);
     });
 
-    cartCount.innerText = count;
-    cartTotal.innerText = total;
+    count.innerText = c;
+    totalDiv.innerText = total;
 }
 
 function changeQty(name, change) {
@@ -106,22 +65,15 @@ function changeQty(name, change) {
     if (!item) return;
 
     item.qty += change;
+    if (item.qty <= 0) cart = cart.filter(i => i.name !== name);
 
-    if (item.qty <= 0) {
-        cart = cart.filter(i => i.name !== name);
-    }
-
-    updateCartUI();
+    updateCart();
 }
 
-// DRAWER
 function toggleCart() {
-    trackEvent("cart_open");
     document.getElementById("cartDrawer").classList.toggle("open");
 }
 
-// CHECKOUT
 function checkout() {
-    trackEvent("checkout");
-    alert("Checkout successful!");
+    alert("Checkout done");
 }
