@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import sqlite3
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import uuid
 
 app = Flask(__name__)
@@ -66,7 +67,7 @@ def track():
                      data.get('utm_campaign'),
                      data.get('event_type'),
                      data.get('product'),
-                     datetime.now()
+                     datetime.now(ZoneInfo("Asia/Kolkata"))
                  ))
 
     conn.commit()
