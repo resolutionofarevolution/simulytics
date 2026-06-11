@@ -1,5 +1,36 @@
 let cart = [];
 
+function getSessionId() {
+    let sessionId = localStorage.getItem("session_id");
+
+    if (!sessionId) {
+        sessionId = crypto.randomUUID();
+        localStorage.setItem("session_id", sessionId);
+    }
+
+    return sessionId;
+}
+
+function trackEvent(eventType, product = "") {
+
+    fetch("/track", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            session_id: getSessionId(),
+            utm_source: "direct",
+            utm_campaign: "simulytics_demo",
+            event_type: eventType,
+            product: product
+        })
+    })
+    .then(r => r.json())
+    .then(data => console.log("Tracked:", data))
+    .catch(err => console.error(err));
+}
+
 function filterProducts(e, category) {
     const cards = document.querySelectorAll('.card');
 
