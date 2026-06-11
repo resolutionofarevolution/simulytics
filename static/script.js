@@ -5,6 +5,7 @@ let cart = [];
 ========================= */
 
 function getSessionId() {
+
     let sessionId = localStorage.getItem("session_id");
 
     if (!sessionId) {
@@ -20,6 +21,7 @@ function getSessionId() {
 ========================= */
 
 function getUTMParameters() {
+
     const params = new URLSearchParams(window.location.search);
 
     return {
@@ -32,7 +34,11 @@ function getUTMParameters() {
    EVENT TRACKING
 ========================= */
 
-function trackEvent(eventType, product = "") {
+function trackEvent(
+    eventType,
+    product = "",
+    customerName = ""
+) {
 
     const utm = getUTMParameters();
 
@@ -46,7 +52,8 @@ function trackEvent(eventType, product = "") {
             utm_source: utm.utm_source,
             utm_campaign: utm.utm_campaign,
             event_type: eventType,
-            product: product
+            product: product,
+            customer_name: customerName
         })
     })
     .then(response => response.json())
@@ -60,18 +67,21 @@ function trackEvent(eventType, product = "") {
 
 function filterProducts(e, category) {
 
-    const cards = document.querySelectorAll('.card');
+    const cards = document.querySelectorAll(".card");
 
-    document.querySelectorAll('.filters button')
-        .forEach(btn => btn.classList.remove('active'));
+    document
+        .querySelectorAll(".filters button")
+        .forEach(btn => btn.classList.remove("active"));
 
-    e.target.classList.add('active');
+    e.target.classList.add("active");
 
     cards.forEach(card => {
+
         card.style.display =
-            category === 'all' || card.classList.contains(category)
-                ? 'block'
-                : 'none';
+            category === "all" ||
+            card.classList.contains(category)
+                ? "block"
+                : "none";
     });
 
     trackEvent("category_filter", category);
@@ -113,6 +123,7 @@ function updateCart() {
     itemsDiv.innerHTML = "";
 
     if (cart.length === 0) {
+
         itemsDiv.innerHTML =
             "<p style='text-align:center;'>Your cart is empty</p>";
     }
@@ -173,7 +184,8 @@ function toggleCart() {
     const drawer = document.getElementById("cartDrawer");
     const overlay = document.getElementById("overlay");
 
-    const openingCart = !drawer.classList.contains("open");
+    const openingCart =
+        !drawer.classList.contains("open");
 
     drawer.classList.toggle("open");
     overlay.classList.toggle("show");
@@ -189,37 +201,73 @@ function toggleCart() {
 
 function checkout() {
 
-    trackEvent("purchase");
+    if (cart.length === 0) {
 
-    alert("Purchase Successful!");
+        alert("Your cart is empty");
+
+        return;
+    }
+
+    const customerName =
+        prompt("Enter Your Name");
+
+    if (
+        customerName === null ||
+        customerName.trim() === ""
+    ) {
+
+        alert("Name is required");
+
+        return;
+    }
+
+    trackEvent(
+        "purchase",
+        "",
+        customerName.trim()
+    );
+
+    alert(
+        "Purchase Successful!\n\nThank You, " +
+        customerName
+    );
 
     cart = [];
+
     updateCart();
 }
 
 /* =========================
-   PAGE VIEW
+   PAGE VIEW + PRODUCT VIEW
 ========================= */
 
 window.onload = function () {
 
     trackEvent("page_view");
 
-    document.querySelectorAll(".card").forEach(card => {
+    document
+        .querySelectorAll(".card")
+        .forEach(card => {
 
-        card.addEventListener("click", function (e) {
+            card.addEventListener(
+                "click",
+                function (e) {
 
-            if (
-                e.target.classList.contains("add-btn") ||
-                e.target.tagName === "BUTTON"
-            ) {
-                return;
-            }
+                    if (
+                        e.target.classList.contains("add-btn") ||
+                        e.target.tagName === "BUTTON"
+                    ) {
+                        return;
+                    }
 
-            const productName =
-                card.querySelector("h3").innerText;
+                    const productName =
+                        card.querySelector("h3").innerText;
 
-            trackEvent("product_view", productName);
+                    trackEvent(
+                        "product_view",
+                        productName
+                    );
+                }
+            );
         });
-    });
 };
