@@ -1,5 +1,9 @@
 let cart = [];
 
+/* =========================
+   SESSION MANAGEMENT
+========================= */
+
 function getSessionId() {
     let sessionId = localStorage.getItem("session_id");
 
@@ -11,7 +15,26 @@ function getSessionId() {
     return sessionId;
 }
 
+/* =========================
+   UTM PARAMETERS
+========================= */
+
+function getUTMParameters() {
+    const params = new URLSearchParams(window.location.search);
+
+    return {
+        utm_source: params.get("utm_source") || "direct",
+        utm_campaign: params.get("utm_campaign") || "organic"
+    };
+}
+
+/* =========================
+   EVENT TRACKING
+========================= */
+
 function trackEvent(eventType, product = "") {
+
+    const utm = getUTMParameters();
 
     fetch("/track", {
         method: "POST",
@@ -20,31 +43,43 @@ function trackEvent(eventType, product = "") {
         },
         body: JSON.stringify({
             session_id: getSessionId(),
-            utm_source: "direct",
-            utm_campaign: "simulytics_demo",
+            utm_source: utm.utm_source,
+            utm_campaign: utm.utm_campaign,
             event_type: eventType,
             product: product
         })
     })
-    .then(r => r.json())
-    .then(data => console.log("Tracked:", data))
-    .catch(err => console.error(err));
+    .then(response => response.json())
+    .then(data => console.log("Tracked:", eventType))
+    .catch(error => console.error("Tracking Error:", error));
 }
 
+/* =========================
+   PRODUCT FILTER
+========================= */
+
 function filterProducts(e, category) {
+
     const cards = document.querySelectorAll('.card');
 
     document.querySelectorAll('.filters button')
-        .forEach(b => b.classList.remove('active'));
+        .forEach(btn => btn.classList.remove('active'));
 
     e.target.classList.add('active');
 
     cards.forEach(card => {
         card.style.display =
             category === 'all' || card.classList.contains(category)
-            ? 'block' : 'none';
+                ? 'block'
+                : 'none';
     });
+
+    trackEvent("category_filter", category);
 }
+
+/* =========================
+   ADD TO CART
+========================= */
 
 function addToCart(name, price) {
 
@@ -52,13 +87,25 @@ function addToCart(name, price) {
 
     const item = cart.find(i => i.name === name);
 
-    if (item) item.qty++;
-    else cart.push({ name, price, qty: 1 });
+    if (item) {
+        item.qty++;
+    } else {
+        cart.push({
+            name,
+            price,
+            qty: 1
+        });
+    }
 
     updateCart();
 }
 
+/* =========================
+   UPDATE CART
+========================= */
+
 function updateCart() {
+
     const itemsDiv = document.getElementById("cartItems");
     const count = document.getElementById("cart-count");
     const totalDiv = document.getElementById("cartTotal");
@@ -66,36 +113,46 @@ function updateCart() {
     itemsDiv.innerHTML = "";
 
     if (cart.length === 0) {
-        itemsDiv.innerHTML = "<p style='text-align:center;'>Your cart is empty</p>";
+        itemsDiv.innerHTML =
+            "<p style='text-align:center;'>Your cart is empty</p>";
     }
 
     let total = 0;
-    let c = 0;
+    let cartCount = 0;
 
     cart.forEach(item => {
+
         total += item.price * item.qty;
-        c += item.qty;
+        cartCount += item.qty;
 
         itemsDiv.innerHTML += `
-        <div class="cart-item">
-            <div>
-                <strong>${item.name}</strong><br>
-                ₹${item.price}
+            <div class="cart-item">
+                <div>
+                    <strong>${item.name}</strong><br>
+                    ₹${item.price}
+                </div>
+
+                <div>
+                    <button onclick="changeQty('${item.name}', -1)">−</button>
+                    <span>${item.qty}</span>
+                    <button onclick="changeQty('${item.name}', 1)">+</button>
+                </div>
             </div>
-            <div>
-                <button onclick="changeQty('${item.name}', -1)">−</button>
-                <span>${item.qty}</span>
-                <button onclick="changeQty('${item.name}', 1)">+</button>
-            </div>
-        </div>`;
+        `;
     });
 
-    count.innerText = c;
+    count.innerText = cartCount;
     totalDiv.innerText = total;
 }
 
+/* =========================
+   CHANGE QUANTITY
+========================= */
+
 function changeQty(name, change) {
+
     const item = cart.find(i => i.name === name);
+
     if (!item) return;
 
     item.qty += change;
@@ -107,17 +164,62 @@ function changeQty(name, change) {
     updateCart();
 }
 
+/* =========================
+   VIEW CART
+========================= */
+
 function toggleCart() {
-    document.getElementById("cartDrawer").classList.toggle("open");
-    document.getElementById("overlay").classList.toggle("show");
+
+    const drawer = document.getElementById("cartDrawer");
+    const overlay = document.getElementById("overlay");
+
+    const openingCart = !drawer.classList.contains("open");
+
+    drawer.classList.toggle("open");
+    overlay.classList.toggle("show");
+
+    if (openingCart) {
+        trackEvent("view_cart");
+    }
 }
+
+/* =========================
+   PURCHASE / CONVERSION
+========================= */
 
 function checkout() {
 
-    trackEvent("checkout");
+    trackEvent("purchase");
 
-    alert("Checkout complete");
+    alert("Purchase Successful!");
+
+    cart = [];
+    updateCart();
 }
+
+/* =========================
+   PAGE VIEW
+========================= */
+
 window.onload = function () {
+
     trackEvent("page_view");
+
+    document.querySelectorAll(".card").forEach(card => {
+
+        card.addEventListener("click", function (e) {
+
+            if (
+                e.target.classList.contains("add-btn") ||
+                e.target.tagName === "BUTTON"
+            ) {
+                return;
+            }
+
+            const productName =
+                card.querySelector("h3").innerText;
+
+            trackEvent("product_view", productName);
+        });
+    });
 };
