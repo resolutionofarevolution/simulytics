@@ -6,18 +6,18 @@ from zoneinfo import ZoneInfo
 app = Flask(__name__)
 
 
-# -----------------------------
+# ==========================================
 # DATABASE CONNECTION
-# -----------------------------
+# ==========================================
 def get_db_connection():
     conn = sqlite3.connect("database.db")
     conn.row_factory = sqlite3.Row
     return conn
 
 
-# -----------------------------
+# ==========================================
 # DATABASE INITIALIZATION
-# -----------------------------
+# ==========================================
 def init_db():
 
     conn = get_db_connection()
@@ -32,15 +32,15 @@ def init_db():
             event_type TEXT,
             product TEXT,
             customer_name TEXT,
-            quantity INTEGER,
-            revenue REAL,
+            quantity INTEGER DEFAULT 0,
+            revenue REAL DEFAULT 0,
             timestamp TEXT
         )
     """)
 
     conn.commit()
 
-    # Safe upgrade for older databases
+    # Upgrade existing databases safely
     try:
         conn.execute(
             "ALTER TABLE events ADD COLUMN customer_name TEXT"
@@ -71,17 +71,17 @@ def init_db():
 init_db()
 
 
-# -----------------------------
+# ==========================================
 # HOME PAGE
-# -----------------------------
+# ==========================================
 @app.route("/")
 def index():
     return render_template("index.html")
 
 
-# -----------------------------
+# ==========================================
 # TRACK EVENT API
-# -----------------------------
+# ==========================================
 @app.route("/track", methods=["POST"])
 def track():
 
@@ -120,20 +120,18 @@ def track():
     conn.commit()
     conn.close()
 
-    return jsonify({
-        "status": "success"
-    })
+    return jsonify({"status": "success"})
 
 
-# -----------------------------
+# ==========================================
 # GET ALL EVENTS
-# -----------------------------
+# ==========================================
 @app.route("/api/events", methods=["GET"])
 def get_events():
 
     conn = get_db_connection()
 
-    data = conn.execute("""
+    events = conn.execute("""
         SELECT *
         FROM events
         ORDER BY id DESC
@@ -141,12 +139,12 @@ def get_events():
 
     conn.close()
 
-    return jsonify([dict(row) for row in data])
+    return jsonify([dict(row) for row in events])
 
 
-# -----------------------------
+# ==========================================
 # DASHBOARD SUMMARY API
-# -----------------------------
+# ==========================================
 @app.route("/api/summary", methods=["GET"])
 def summary():
 
@@ -162,16 +160,16 @@ def summary():
         FROM events
     """).fetchone()["cnt"]
 
-    total_purchases = conn.execute("""
-        SELECT COUNT(*) cnt
-        FROM events
-        WHERE event_type = 'purchase'
-    """).fetchone()["cnt"]
-
     total_add_to_cart = conn.execute("""
         SELECT COUNT(*) cnt
         FROM events
         WHERE event_type = 'add_to_cart'
+    """).fetchone()["cnt"]
+
+    total_purchases = conn.execute("""
+        SELECT COUNT(*) cnt
+        FROM events
+        WHERE event_type = 'purchase'
     """).fetchone()["cnt"]
 
     total_revenue = conn.execute("""
@@ -198,8 +196,19 @@ def summary():
     })
 
 
-# -----------------------------
+# ==========================================
+# HEALTH CHECK
+# ==========================================
+@app.route("/health")
+def health():
+    return jsonify({
+        "status": "running",
+        "application": "Simulytics"
+    })
+
+
+# ==========================================
 # RUN APPLICATION
-# -----------------------------
+# ==========================================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
