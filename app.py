@@ -10,7 +10,7 @@ app = Flask(__name__)
 # DATABASE CONNECTION
 # -----------------------------
 def get_db_connection():
-    conn = sqlite3.connect('database.db')
+    conn = sqlite3.connect("database.db")
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -19,9 +19,10 @@ def get_db_connection():
 # DATABASE INITIALIZATION
 # -----------------------------
 def init_db():
+
     conn = get_db_connection()
 
-    conn.execute('''
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS events
         (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,16 +32,34 @@ def init_db():
             event_type TEXT,
             product TEXT,
             customer_name TEXT,
+            quantity INTEGER,
+            revenue REAL,
             timestamp TEXT
         )
-    ''')
+    """)
 
     conn.commit()
 
-    # Add customer_name column for older databases
+    # Safe upgrade for older databases
     try:
         conn.execute(
             "ALTER TABLE events ADD COLUMN customer_name TEXT"
+        )
+        conn.commit()
+    except:
+        pass
+
+    try:
+        conn.execute(
+            "ALTER TABLE events ADD COLUMN quantity INTEGER DEFAULT 0"
+        )
+        conn.commit()
+    except:
+        pass
+
+    try:
+        conn.execute(
+            "ALTER TABLE events ADD COLUMN revenue REAL DEFAULT 0"
         )
         conn.commit()
     except:
@@ -55,7 +74,7 @@ init_db()
 # -----------------------------
 # HOME PAGE
 # -----------------------------
-@app.route('/')
+@app.route("/")
 def index():
     return render_template("index.html")
 
@@ -63,14 +82,14 @@ def index():
 # -----------------------------
 # TRACK EVENT API
 # -----------------------------
-@app.route('/track', methods=['POST'])
+@app.route("/track", methods=["POST"])
 def track():
 
     data = request.json
 
     conn = get_db_connection()
 
-    conn.execute('''
+    conn.execute("""
         INSERT INTO events
         (
             session_id,
@@ -79,16 +98,20 @@ def track():
             event_type,
             product,
             customer_name,
+            quantity,
+            revenue,
             timestamp
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        data.get('session_id'),
-        data.get('utm_source'),
-        data.get('utm_campaign'),
-        data.get('event_type'),
-        data.get('product'),
-        data.get('customer_name'),
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        data.get("session_id"),
+        data.get("utm_source"),
+        data.get("utm_campaign"),
+        data.get("event_type"),
+        data.get("product"),
+        data.get("customer_name"),
+        data.get("quantity", 0),
+        data.get("revenue", 0),
         datetime.now(
             ZoneInfo("Asia/Kolkata")
         ).strftime("%Y-%m-%d %H:%M:%S")
@@ -105,53 +128,63 @@ def track():
 # -----------------------------
 # GET ALL EVENTS
 # -----------------------------
-@app.route('/api/events', methods=['GET'])
+@app.route("/api/events", methods=["GET"])
 def get_events():
 
     conn = get_db_connection()
 
-    data = conn.execute('''
+    data = conn.execute("""
         SELECT *
         FROM events
         ORDER BY id DESC
-    ''').fetchall()
+    """).fetchall()
 
     conn.close()
 
-    result = [dict(row) for row in data]
-
-    return jsonify(result)
+    return jsonify([dict(row) for row in data])
 
 
 # -----------------------------
 # DASHBOARD SUMMARY API
 # -----------------------------
-@app.route('/api/summary', methods=['GET'])
+@app.route("/api/summary", methods=["GET"])
 def summary():
 
     conn = get_db_connection()
 
-    total_events = conn.execute('''
-        SELECT COUNT(*) AS cnt
+    total_events = conn.execute("""
+        SELECT COUNT(*) cnt
         FROM events
-    ''').fetchone()['cnt']
+    """).fetchone()["cnt"]
 
-    total_sessions = conn.execute('''
-        SELECT COUNT(DISTINCT session_id) AS cnt
+    total_sessions = conn.execute("""
+        SELECT COUNT(DISTINCT session_id) cnt
         FROM events
-    ''').fetchone()['cnt']
+    """).fetchone()["cnt"]
 
-    total_purchases = conn.execute('''
-        SELECT COUNT(*) AS cnt
+    total_purchases = conn.execute("""
+        SELECT COUNT(*) cnt
         FROM events
         WHERE event_type = 'purchase'
-    ''').fetchone()['cnt']
+    """).fetchone()["cnt"]
 
-    total_add_to_cart = conn.execute('''
-        SELECT COUNT(*) AS cnt
+    total_add_to_cart = conn.execute("""
+        SELECT COUNT(*) cnt
         FROM events
         WHERE event_type = 'add_to_cart'
-    ''').fetchone()['cnt']
+    """).fetchone()["cnt"]
+
+    total_revenue = conn.execute("""
+        SELECT IFNULL(SUM(revenue),0) revenue
+        FROM events
+        WHERE event_type = 'purchase'
+    """).fetchone()["revenue"]
+
+    total_quantity = conn.execute("""
+        SELECT IFNULL(SUM(quantity),0) qty
+        FROM events
+        WHERE event_type = 'purchase'
+    """).fetchone()["qty"]
 
     conn.close()
 
@@ -159,7 +192,9 @@ def summary():
         "total_events": total_events,
         "total_sessions": total_sessions,
         "total_add_to_cart": total_add_to_cart,
-        "total_purchases": total_purchases
+        "total_purchases": total_purchases,
+        "total_revenue": total_revenue,
+        "total_quantity": total_quantity
     })
 
 
