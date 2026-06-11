@@ -47,6 +47,9 @@ function filterProducts(e, category) {
 }
 
 function addToCart(name, price) {
+
+    trackEvent("add_to_cart", name);
+
     const item = cart.find(i => i.name === name);
 
     if (item) item.qty++;
@@ -110,5 +113,11 @@ function toggleCart() {
 }
 
 function checkout() {
+
+    trackEvent("checkout");
+
     alert("Checkout complete");
 }
+window.onload = function () {
+    trackEvent("page_view");
+};
