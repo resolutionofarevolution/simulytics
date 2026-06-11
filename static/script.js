@@ -37,7 +37,9 @@ function getUTMParameters() {
 function trackEvent(
     eventType,
     product = "",
-    customerName = ""
+    customerName = "",
+    quantity = 0,
+    revenue = 0
 ) {
 
     const utm = getUTMParameters();
@@ -53,12 +55,18 @@ function trackEvent(
             utm_campaign: utm.utm_campaign,
             event_type: eventType,
             product: product,
-            customer_name: customerName
+            customer_name: customerName,
+            quantity: quantity,
+            revenue: revenue
         })
     })
     .then(response => response.json())
-    .then(data => console.log("Tracked:", eventType))
-    .catch(error => console.error("Tracking Error:", error));
+    .then(data => {
+        console.log("Tracked:", eventType);
+    })
+    .catch(error => {
+        console.error("Tracking Error:", error);
+    });
 }
 
 /* =========================
@@ -101,8 +109,8 @@ function addToCart(name, price) {
         item.qty++;
     } else {
         cart.push({
-            name,
-            price,
+            name: name,
+            price: price,
             qty: 1
         });
     }
@@ -117,7 +125,7 @@ function addToCart(name, price) {
 function updateCart() {
 
     const itemsDiv = document.getElementById("cartItems");
-    const count = document.getElementById("cart-count");
+    const countDiv = document.getElementById("cart-count");
     const totalDiv = document.getElementById("cartTotal");
 
     itemsDiv.innerHTML = "";
@@ -129,15 +137,16 @@ function updateCart() {
     }
 
     let total = 0;
-    let cartCount = 0;
+    let totalItems = 0;
 
     cart.forEach(item => {
 
         total += item.price * item.qty;
-        cartCount += item.qty;
+        totalItems += item.qty;
 
         itemsDiv.innerHTML += `
             <div class="cart-item">
+
                 <div>
                     <strong>${item.name}</strong><br>
                     ₹${item.price}
@@ -148,11 +157,12 @@ function updateCart() {
                     <span>${item.qty}</span>
                     <button onclick="changeQty('${item.name}', 1)">+</button>
                 </div>
+
             </div>
         `;
     });
 
-    count.innerText = cartCount;
+    countDiv.innerText = totalItems;
     totalDiv.innerText = total;
 }
 
@@ -184,13 +194,13 @@ function toggleCart() {
     const drawer = document.getElementById("cartDrawer");
     const overlay = document.getElementById("overlay");
 
-    const openingCart =
+    const isOpening =
         !drawer.classList.contains("open");
 
     drawer.classList.toggle("open");
     overlay.classList.toggle("show");
 
-    if (openingCart) {
+    if (isOpening) {
         trackEvent("view_cart");
     }
 }
@@ -204,7 +214,6 @@ function checkout() {
     if (cart.length === 0) {
 
         alert("Your cart is empty");
-
         return;
     }
 
@@ -217,19 +226,33 @@ function checkout() {
     ) {
 
         alert("Name is required");
-
         return;
     }
 
+    let totalRevenue = 0;
+    let totalQty = 0;
+
+    cart.forEach(item => {
+
+        totalRevenue += item.price * item.qty;
+        totalQty += item.qty;
+    });
+
     trackEvent(
         "purchase",
-        "",
-        customerName.trim()
+        "Order",
+        customerName.trim(),
+        totalQty,
+        totalRevenue
     );
 
     alert(
-        "Purchase Successful!\n\nThank You, " +
-        customerName
+        `Purchase Successful!
+
+Thank You, ${customerName}
+
+Items Purchased: ${totalQty}
+Order Value: ₹${totalRevenue}`
     );
 
     cart = [];
@@ -238,7 +261,7 @@ function checkout() {
 }
 
 /* =========================
-   PAGE VIEW + PRODUCT VIEW
+   PAGE VIEW
 ========================= */
 
 window.onload = function () {
